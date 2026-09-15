@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My French Study Diary</title>
+<style>
+  :root {
+    --ink: #1c1c1e;
+    --paper: #fdfcf9;
+    --blue: #2c3e8c;
+    --red: #b5433a;
+    --line: #e4e0d8;
+    --soft: #6b6b6f;
+    --panel: #f6f4ee;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.55;
+  }
+  .wrap { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
+  header { margin-bottom: 24px; }
+  header .kicker {
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+  h1 { font-size: 26px; margin: 0 0 8px; }
+  header p { color: var(--soft); margin: 0; font-size: 15px; }
+
+  .stats { display: flex; gap: 24px; margin: 24px 0 24px; }
+  .stat { background: var(--panel); border-radius: 8px; padding: 14px 18px; flex: 1; }
+  .stat .num { font-size: 24px; font-weight: 700; color: var(--blue); }
+  .stat .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--soft); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--line); margin-bottom: 24px; }
+  .tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--soft);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    border-radius: 0;
+  }
+  .tab-btn.active { color: var(--ink); border-bottom-color: var(--blue); }
+  .tab-btn:hover:not(.active) { color: var(--ink); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .entry-form {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+    display: grid;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .entry-form label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--soft); font-weight: 600; }
+  .entry-form input {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14.5px;
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+  }
+  .form-row { display: grid; grid-template-columns: 0.7fr 1fr 1fr 0.9fr 1fr; gap: 12px; align-items: end; }
+  @media (max-width: 760px) { .form-row { grid-template-columns: 1fr 1fr; } }
+  .btn-row { display: flex; gap: 10px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+  #addBtn { background: var(--blue); color: #fff; }
+  #addBtn:hover { background: #23306e; }
+  #copyBtn, #downloadBtn, #wordsExpandBtn, #wordsCollapseBtn, #notesExpandBtn, #notesCollapseBtn {
+    background: #fff; color: var(--ink); border: 1px solid var(--line);
+  }
+  #copyBtn:hover, #downloadBtn:hover, #wordsExpandBtn:hover, #wordsCollapseBtn:hover, #notesExpandBtn:hover, #notesCollapseBtn:hover {
+    background: var(--panel);
+  }
+  #status { font-size: 13px; color: var(--soft); }
+
+  h2 { font-size: 17px; margin: 0 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--ink); }
+  .section-tools { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 14px; }
+
+  .quiz-box {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 22px;
+  }
+  .quiz-score { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--soft); font-weight: 600; margin-bottom: 14px; }
+  .quiz-prompt-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--soft); margin-bottom: 4px; }
+  .quiz-prompt { font-size: 19px; font-weight: 700; margin-bottom: 16px; min-height: 28px; }
+  .quiz-input-row { display: flex; gap: 10px; }
+  .quiz-input-row input {
+    flex: 1;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: #fff;
+  }
+  .quiz-input-row input.correct { border-color: #2e7d32; background: #f1f8f1; }
+  .quiz-input-row input.incorrect { border-color: var(--red); background: #fbf0ef; }
+  .quiz-feedback { font-size: 14.5px; margin-top: 12px; min-height: 20px; }
+  .quiz-feedback.correct { color: #2e7d32; font-weight: 600; }
+  .quiz-feedback.incorrect { color: var(--red); }
+  .quiz-feedback .pron { color: var(--soft); font-weight: 400; }
+  .quiz-btn-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  #quizNextBtn, #quizShowBtn { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  #quizNextBtn:hover, #quizShowBtn:hover { background: #efece3; }
+  #quizCheckBtn { background: var(--blue); color: #fff; }
+  #quizCheckBtn:hover { background: #23306e; }
+
+  .quiz-mastery { font-size: 13px; color: var(--soft); margin-top: -8px; }
+  .quiz-mode-label { font-size: 11.5px; color: var(--soft); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 4px; }
+  .quiz-choices { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .quiz-choice-btn {
+    text-align: left;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .quiz-choice-btn:hover:not(:disabled) { background: var(--panel); }
+  .quiz-choice-btn.correct { border-color: #2e7d32; background: #f1f8f1; }
+  .quiz-choice-btn.incorrect { border-color: var(--red); background: #fbf0ef; }
+  .quiz-choice-btn:disabled { cursor: default; }
+
+  /* Accordion sections (by category / topic) */
+  .accordion { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: #fff; }
+  .accordion-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--panel);
+    border: none;
+    padding: 13px 16px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 0;
+  }
+  .accordion-header:hover { background: #efece3; }
+  .accordion-header .caret { color: var(--soft); font-weight: 400; transition: transform 0.15s ease; display: inline-block; }
+  .accordion.open .accordion-header .caret { transform: rotate(90deg); }
+  .accordion-count { color: var(--soft); font-weight: 600; font-size: 12.5px; }
+  .accordion-body { display: none; padding: 0; }
+  .accordion.open .accordion-body { display: block; }
+
+  table.chart { width: 100%; border-collapse: collapse; }
+  table.chart th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--soft);
+    background: var(--paper);
+    padding: 8px 16px;
+    font-weight: 600;
+  }
+  table.chart td {
+    padding: 9px 16px;
+    border-top: 1px solid var(--line);
+    font-size: 14.5px;
+  }
+  table.chart td.date-col { color: var(--soft); font-size: 12.5px; white-space: nowrap; width: 1%; }
+  table.chart td.fr-col { font-weight: 600; }
+  .empty-state { color: var(--soft); font-style: italic; text-align: center; padding: 30px; border: 1px dashed var(--line); border-radius: 8px; }
+
+  .log-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+  .log-row .log-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+  .log-row .log-date { font-weight: 700; font-size: 14.5px; min-width: 130px; }
+  .log-row .log-title { color: var(--red); font-size: 13px; font-weight: 600; min-width: 110px; }
+  .log-row .log-counts { color: var(--soft); font-size: 13px; margin-left: auto; white-space: nowrap; }
+  .log-gap { color: var(--soft); font-size: 12.5px; font-style: italic; padding: 4px 16px 10px; }
+
+  .log-header { gap: 14px; }
+  .log-header-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .log-header .log-date { font-weight: 700; font-size: 14.5px; }
+  .log-header .log-title { color: var(--red); font-size: 13px; font-weight: 600; }
+  .log-header .log-counts { color: var(--soft); font-size: 13px; font-weight: 400; white-space: nowrap; }
+  .log-note-topic { display: block; color: var(--soft); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; }
+
+  .note-card { padding: 14px 16px; border-top: 1px solid var(--line); }
+  .note-card:first-child { border-top: none; }
+  .note-card .q { font-weight: 700; margin-bottom: 6px; }
+  .note-card .qdate { color: var(--soft); font-weight: 400; font-size: 12px; margin-left: 8px; }
+  .note-card .a { font-size: 14px; color: var(--ink); }
+
+  .persist-note { font-size: 12.5px; color: var(--soft); margin-top: 14px; }
+  footer { margin-top: 50px; color: var(--soft); font-size: 13px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="kicker">French · Learning Log</p>
+    <h1>My French Study Diary</h1>
+    <p>Quiz yourself, browse everything you've learned by subject, or dig into the background/etymology notes.</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="statDays">0</div><div class="label">Days logged</div></div>
+    <div class="stat"><div class="num" id="statWords">0</div><div class="label">Words / phrases</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn" data-tab="log">Practice Log</button>
+    <button class="tab-btn" data-tab="quiz">Quiz</button>
+    <button class="tab-btn" data-tab="words">Words</button>
+    <button class="tab-btn" data-tab="background">Background</button>
+  </div>
+
+  <!-- PRACTICE LOG TAB -->
+  <div class="tab-panel" id="tabLog">
+    <h2>Practice Log</h2>
+    <div class="stats" style="margin-top: 0;">
+      <div class="stat"><div class="num" id="logDaysCount">0</div><div class="label">Days practiced</div></div>
+      <div class="stat"><div class="num" id="logSpanCount">0</div><div class="label">Days since you started</div></div>
+    </div>
+    <div class="section-tools">
+      <button id="logExpandBtn" type="button">Expand all</button>
+      <button id="logCollapseBtn" type="button">Collapse all</button>
+    </div>
+    <div id="logList"></div>
+  </div>
+
+  <!-- QUIZ TAB -->
+  <div class="tab-panel" id="tabQuiz">
+    <h2>Quiz</h2>
+    <div class="quiz-box">
+      <div class="quiz-score" id="quizScore">Score: 0 / 0</div>
+      <div class="quiz-mastery" id="quizMastery">Mastered: 0 / 0</div>
+      <p class="persist-note" style="margin-top: -4px; margin-bottom: 16px;">New words start as multiple choice. Get one right and it graduates to typing — get it right 3 times in a row while typing and it's "Mastered." Miss it at any stage and it comes back around sooner.</p>
+      <div class="quiz-mode-label" id="quizModeLabel"></div>
+      <div class="quiz-prompt-label">English</div>
+      <div class="quiz-prompt" id="quizPrompt">—</div>
+      <div class="quiz-choices" id="quizChoices"></div>
+      <div class="quiz-input-row" id="quizInputRow">
+        <input type="text" id="quizAnswer" placeholder="Type the French..." autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button id="quizCheckBtn">Check</button>
+      </div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+      <div class="quiz-btn-row">
+        <button id="quizShowBtn" type="button">Show answer</button>
+        <button id="quizNextBtn" type="button">Next question</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORDS TAB -->
+  <div class="tab-panel" id="tabWords">
+    <div class="entry-form">
+      <div class="form-row">
+        <div>
+          <label for="entryDate">Date</label>
+          <input type="date" id="entryDate">
+        </div>
+        <div>
+          <label for="frWord">French</label>
+          <input type="text" id="frWord" placeholder="e.g. bonjour">
+        </div>
+        <div>
+          <label for="pronWord">Pronunciation</label>
+          <input type="text" id="pronWord" placeholder="e.g. bohn-zhoor">
+        </div>
+        <div>
+          <label for="catWord">Subject</label>
+          <input type="text" id="catWord" list="catList" placeholder="e.g. Greetings">
+          <datalist id="catList"></datalist>
+        </div>
+        <div>
+          <label for="enWord">English</label>
+          <input type="text" id="enWord" placeholder="e.g. hello">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="addBtn">Add</button>
+        <button id="copyBtn" type="button">Copy chart as text</button>
+        <button id="downloadBtn" type="button">Download as .csv</button>
+        <span id="status"></span>
+      </div>
+    </div>
+
+    <h2>Words by Subject</h2>
+    <div class="section-tools">
+      <button id="wordsExpandBtn" type="button">Expand all</button>
+      <button id="wordsCollapseBtn" type="button">Collapse all</button>
+    </div>
+    <div id="wordsLog"></div>
+    <p class="persist-note">Entries live only in this page view and reset if you reopen it — download the .csv (opens straight in Excel/Sheets) before you leave, or tell me what you learned in chat and I'll add it to your saved copy.</p>
+  </div>
+
+  <!-- BACKGROUND TAB -->
+  <div class="tab-panel" id="tabBackground">
+    <h2>Background & Curiosities</h2>
+    <p class="persist-note" style="margin-top: -6px; margin-bottom: 16px;">The etymology and history questions that came up along the way, grouped by theme rather than by day.</p>
+    <div class="section-tools">
+      <button id="notesExpandBtn" type="button">Expand all</button>
+      <button id="notesCollapseBtn" type="button">Collapse all</button>
+    </div>
+    <div id="notesLog"></div>
+  </div>
+
+  <footer>One session at a time.</footer>
+</div>
+
+<script>
+  // ---------- Data ----------
+  const CATEGORY_ORDER = [
+    "Greetings & Introductions",
+    "Talking About Yourself",
+    "Politeness",
+    "Farewells",
+    "Family & Nature",
+    "Classroom Phrases",
+    "Numbers",
+    "Days of the Week",
+    "Months",
+    "Time & Seasons",
+    "Compliments & Relationships",
+    "Grammar Basics",
+    "Everyday Objects",
+    "Places",
+    "Food",
+    "Countries"
+  ];
+
+  const TOPIC_ORDER = [
+    "Word Origins & Language Change",
+    "Calendar & Time History",
+    "World History",
+    "Grammar Patterns"
+  ];
+
+  const dayTitles = {};
+
+  const entries = [];
+
+  const notesEntries = [];
+
+  // ---------- Shared helpers ----------
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function formatDate(iso) {
+    if (!iso) return 'No date';
+    const [y, m, d] = iso.split('-');
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return `${months[parseInt(m,10)-1]} ${parseInt(d,10)}, ${y}`;
+  }
+
+  function formatDateShort(iso) {
+    if (!iso) return '—';
+    const [y, m, d] = iso.split('-');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[parseInt(m,10)-1]} ${parseInt(d,10)}`;
+  }
+
+  function orderedKeys(map, order) {
+    return Object.keys(map).sort((a, b) => {
+      const ia = order.indexOf(a), ib = order.indexOf(b);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+  }
+
+  // ---------- Tabs ----------
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabPanels = {
+    log: document.getElementById('tabLog'),
+    quiz: document.getElementById('tabQuiz'),
+    words: document.getElementById('tabWords'),
+    background: document.getElementById('tabBackground')
+  };
+  function setTab(name) {
+    tabButtons.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    Object.entries(tabPanels).forEach(([key, el]) => el.classList.toggle('active', key === name));
+  }
+  tabButtons.forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+  setTab('log');
+
+  // ---------- Words tab ----------
+  const wordsLog = document.getElementById('wordsLog');
+  const statDays = document.getElementById('statDays');
+  const statWords = document.getElementById('statWords');
+  let expandedWordCats = new Set();
+
+  document.getElementById('entryDate').valueAsDate = new Date();
+  document.getElementById('catList').innerHTML = CATEGORY_ORDER.map(c => `<option value="${escapeHtml(c)}">`).join('');
+
+  function renderWords() {
+    if (entries.length === 0) {
+      wordsLog.innerHTML = '<div class="empty-state">No words yet — add your first pair above.</div>';
+      statDays.textContent = '0';
+      statWords.textContent = '0';
+      return;
+    }
+    const byCat = {};
+    entries.forEach(e => {
+      const key = e.cat || 'Other';
+      if (!byCat[key]) byCat[key] = [];
+      byCat[key].push(e);
+    });
+    const cats = orderedKeys(byCat, CATEGORY_ORDER);
+    wordsLog.innerHTML = cats.map(cat => {
+      const items = byCat[cat];
+      const open = expandedWordCats.has(cat);
+      return `
+        <div class="accordion ${open ? 'open' : ''}">
+          <button class="accordion-header" data-toggle-word-cat="${escapeHtml(cat)}">
+            <span><span class="caret">▸</span> ${escapeHtml(cat)}</span>
+            <span class="accordion-count">${items.length}</span>
+          </button>
+          <div class="accordion-body">
+            <table class="chart">
+              <tr><th>Date</th><th>French</th><th>Pronunciation</th><th>English</th></tr>
+              ${items.map(e => `<tr><td class="date-col">${formatDateShort(e.date)}</td><td class="fr-col">${escapeHtml(e.fr)}</td><td>${escapeHtml(e.pron || '')}</td><td>${escapeHtml(e.en)}</td></tr>`).join('')}
+            </table>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const uniqueDays = new Set(entries.map(e => e.date)).size;
+    statDays.textContent = uniqueDays;
+    statWords.textContent = entries.length;
+  }
+
+  wordsLog.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-toggle-word-cat]');
+    if (!btn) return;
+    const cat = btn.dataset.toggleWordCat;
+    if (expandedWordCats.has(cat)) expandedWordCats.delete(cat);
+    else expandedWordCats.add(cat);
+    renderWords();
+  });
+
+  document.getElementById('wordsExpandBtn').addEventListener('click', () => {
+    const cats = new Set(entries.map(e => e.cat || 'Other'));
+    expandedWordCats = cats;
+    renderWords();
+  });
+  document.getElementById('wordsCollapseBtn').addEventListener('click', () => {
+    expandedWordCats = new Set();
+    renderWords();
+  });
+
+  document.getElementById('addBtn').addEventListener('click', () => {
+    const date = document.getElementById('entryDate').value;
+    const fr = document.getElementById('frWord').value.trim();
+    const pron = document.getElementById('pronWord').value.trim();
+    const cat = document.getElementById('catWord').value.trim() || 'Other';
+    const en = document.getElementById('enWord').value.trim();
+    if (!fr && !en) return;
+    entries.push({ date, fr, pron, cat, en });
+    expandedWordCats.add(cat);
+    document.getElementById('frWord').value = '';
+    document.getElementById('pronWord').value = '';
+    document.getElementById('catWord').value = '';
+    document.getElementById('enWord').value = '';
+    document.getElementById('frWord').focus();
+    renderWords();
+    renderLog();
+  });
+
+  function chartText() {
+    return entries.map(e => `${formatDate(e.date)}\t${e.cat || ''}\t${e.fr}\t${e.pron || ''}\t${e.en}`).join('\n');
+  }
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const status = document.getElementById('status');
+    if (entries.length === 0) {
+      status.textContent = 'Nothing to copy yet.';
+      setTimeout(() => status.textContent = '', 2000);
+      return;
+    }
+    navigator.clipboard.writeText(chartText()).then(() => {
+      status.textContent = 'Copied!';
+      setTimeout(() => status.textContent = '', 2000);
+    }).catch(() => {
+      status.textContent = 'Copy failed — select and copy manually.';
+      setTimeout(() => status.textContent = '', 3000);
+    });
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    if (entries.length === 0) return;
+    const rows = [['Date','Subject','French','Pronunciation','English'], ...entries.map(e => [formatDate(e.date), e.cat || '', e.fr, e.pron || '', e.en])];
+    const csv = rows.map(r => r.map(v => `"${(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'french-study-diary.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // ---------- Background tab ----------
+  const notesLog = document.getElementById('notesLog');
+  let expandedTopics = new Set();
+
+  function renderNotes() {
+    if (notesEntries.length === 0) {
+      notesLog.innerHTML = '<div class="empty-state">No background notes yet.</div>';
+      return;
+    }
+    const byTopic = {};
+    notesEntries.forEach(n => {
+      const key = n.topic || 'Other';
+      if (!byTopic[key]) byTopic[key] = [];
+      byTopic[key].push(n);
+    });
+    const topics = orderedKeys(byTopic, TOPIC_ORDER);
+    notesLog.innerHTML = topics.map(topic => {
+      const items = byTopic[topic];
+      const open = expandedTopics.has(topic);
+      return `
+        <div class="accordion ${open ? 'open' : ''}">
+          <button class="accordion-header" data-toggle-topic="${escapeHtml(topic)}">
+            <span><span class="caret">▸</span> ${escapeHtml(topic)}</span>
+            <span class="accordion-count">${items.length}</span>
+          </button>
+          <div class="accordion-body">
+            ${items.map(n => `
+              <div class="note-card">
+                <div class="q">${escapeHtml(n.q)}<span class="qdate">${formatDateShort(n.date)}</span></div>
+                <div class="a">${escapeHtml(n.a)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  notesLog.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-toggle-topic]');
+    if (!btn) return;
+    const topic = btn.dataset.toggleTopic;
+    if (expandedTopics.has(topic)) expandedTopics.delete(topic);
+    else expandedTopics.add(topic);
+    renderNotes();
+  });
+
+  document.getElementById('notesExpandBtn').addEventListener('click', () => {
+    expandedTopics = new Set(notesEntries.map(n => n.topic || 'Other'));
+    renderNotes();
+  });
+  document.getElementById('notesCollapseBtn').addEventListener('click', () => {
+    expandedTopics = new Set();
+    renderNotes();
+  });
+
+  // ---------- Practice Log tab ----------
+  let expandedLogDates = new Set();
+
+  function renderLog() {
+    const dateSet = new Set();
+    entries.forEach(e => dateSet.add(e.date));
+    notesEntries.forEach(n => dateSet.add(n.date));
+    const dates = Array.from(dateSet).filter(Boolean).sort();
+    const logDaysCount = document.getElementById('logDaysCount');
+    const logSpanCount = document.getElementById('logSpanCount');
+    const logList = document.getElementById('logList');
+
+    if (dates.length === 0) {
+      logDaysCount.textContent = '0';
+      logSpanCount.textContent = '0';
+      logList.innerHTML = '<div class="empty-state">No practice logged yet.</div>';
+      return;
+    }
+
+    logDaysCount.textContent = dates.length;
+
+    const firstDate = new Date(dates[0] + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const spanDays = Math.round((today - firstDate) / 86400000) + 1;
+    logSpanCount.textContent = spanDays > 0 ? spanDays : 1;
+
+    const descDates = [...dates].reverse();
+    let html = '';
+    descDates.forEach((date, i) => {
+      const dayWords = entries.filter(e => e.date === date);
+      const dayNotes = notesEntries.filter(n => n.date === date);
+      const wordCount = dayWords.length;
+      const noteCount = dayNotes.length;
+      const parts = [];
+      if (wordCount) parts.push(`${wordCount} word${wordCount === 1 ? '' : 's'}`);
+      if (noteCount) parts.push(`${noteCount} note${noteCount === 1 ? '' : 's'}`);
+      const open = expandedLogDates.has(date);
+
+      const wordsTable = wordCount ? `
+        <table class="chart">
+          <thead><tr><th>Subject</th><th>French</th><th>Pronunciation</th><th>English</th></tr></thead>
+          <tbody>
+            ${dayWords.map(e => `
+              <tr>
+                <td>${escapeHtml(e.cat || '—')}</td>
+                <td class="fr-col">${escapeHtml(e.fr)}</td>
+                <td>${escapeHtml(e.pron || '—')}</td>
+                <td>${escapeHtml(e.en)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      ` : '';
+
+      const notesCards = noteCount ? dayNotes.map(n => `
+        <div class="note-card">
+          <div class="q"><span class="log-note-topic">${escapeHtml(n.topic || 'Other')}</span>${escapeHtml(n.q)}</div>
+          <div class="a">${escapeHtml(n.a)}</div>
+        </div>
+      `).join('') : '';
+
+      html += `
+        <div class="accordion ${open ? 'open' : ''}">
+          <button class="accordion-header log-header" data-toggle-log-date="${date}">
+            <span class="log-header-left">
+              <span class="caret">▸</span>
+              <span class="log-date">${formatDate(date)}</span>
+              ${dayTitles[date] ? `<span class="log-title">${escapeHtml(dayTitles[date])}</span>` : ''}
+            </span>
+            <span class="log-counts">${parts.join(' · ') || '—'}</span>
+          </button>
+          <div class="accordion-body">
+            ${wordsTable}
+            ${notesCards}
+          </div>
+        </div>
+      `;
+      if (i < descDates.length - 1) {
+        const curr = new Date(date + 'T00:00:00');
+        const prev = new Date(descDates[i + 1] + 'T00:00:00');
+        const gapDays = Math.round((curr - prev) / 86400000);
+        if (gapDays > 1) {
+          html += `<div class="log-gap">${gapDays - 1} day${gapDays - 1 === 1 ? '' : 's'} skipped</div>`;
+        }
+      }
+    });
+    logList.innerHTML = html;
+  }
+
+  document.getElementById('logList').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-toggle-log-date]');
+    if (!btn) return;
+    const date = btn.dataset.toggleLogDate;
+    if (expandedLogDates.has(date)) expandedLogDates.delete(date);
+    else expandedLogDates.add(date);
+    renderLog();
+  });
+
+  document.getElementById('logExpandBtn').addEventListener('click', () => {
+    const dateSet = new Set();
+    entries.forEach(e => dateSet.add(e.date));
+    notesEntries.forEach(n => dateSet.add(n.date));
+    expandedLogDates = dateSet;
+    renderLog();
+  });
+  document.getElementById('logCollapseBtn').addEventListener('click', () => {
+    expandedLogDates = new Set();
+    renderLog();
+  });
+
+  // ---------- Quiz tab ----------
+  // Staged mastery model, like a language-game designer would build it:
+  //   "new"      -> shown as multiple choice (recognition). One correct answer promotes it.
+  //   "typing"   -> shown as free typing (recall). 3 correct in a row (no misses/show-answer
+  //                 in between) promotes it to "mastered".
+  //   "mastered" -> still shows up occasionally (rarely, via the priority weighting) as a
+  //                 typing question. Miss it once and it drops back to "typing" — mastery
+  //                 isn't permanent, it has to hold up over time.
+  // Underneath all three stages, the same priority weighting from before still decides how
+  // *often* a word is picked (lower priority = shown sooner/more often).
+  const quizPromptEl = document.getElementById('quizPrompt');
+  const quizAnswerEl = document.getElementById('quizAnswer');
+  const quizInputRowEl = document.getElementById('quizInputRow');
+  const quizChoicesEl = document.getElementById('quizChoices');
+  const quizModeLabelEl = document.getElementById('quizModeLabel');
+  const quizFeedbackEl = document.getElementById('quizFeedback');
+  const quizScoreEl = document.getElementById('quizScore');
+  const quizMasteryEl = document.getElementById('quizMastery');
+  let quizIndex = null;
+  let quizScore = { correct: 0, total: 0 };
+  let quizAnswered = false;
+  const MIN_PRIORITY = 1;
+  const MAX_PRIORITY = 12;
+  const DEFAULT_PRIORITY = 3;
+  const MASTERY_STREAK = 3;
+  let quizStats = entries.map(() => ({ priority: DEFAULT_PRIORITY, stage: 'new', streak: 0 }));
+
+  function normalizeAnswer(str) {
+    return (str || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[’‘]/g, "'")
+      .replace(/[.,!?;:]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function syncQuizStats() {
+    while (quizStats.length < entries.length) quizStats.push({ priority: DEFAULT_PRIORITY, stage: 'new', streak: 0 });
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function pickWeightedIndex(excludeIndex) {
+    syncQuizStats();
+    const weights = entries.map((_, i) => {
+      if (i === excludeIndex && entries.length > 1) return 0;
+      return 1 / quizStats[i].priority;
+    });
+    const total = weights.reduce((a, b) => a + b, 0);
+    if (total <= 0) return Math.floor(Math.random() * entries.length);
+    let r = Math.random() * total;
+    for (let i = 0; i < weights.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return i;
+    }
+    return weights.length - 1;
+  }
+
+  function updateMasteryStat() {
+    syncQuizStats();
+    const masteredCount = quizStats.slice(0, entries.length).filter(s => s.stage === 'mastered').length;
+    quizMasteryEl.textContent = `Mastered: ${masteredCount} / ${entries.length}`;
+  }
+
+  function renderQuizChoices(index) {
+    const correct = entries[index].fr;
+    const pool = entries
+      .filter((_, i) => i !== index)
+      .map(e => e.fr)
+      .filter(fr => normalizeAnswer(fr) !== normalizeAnswer(correct));
+    const uniquePool = Array.from(new Set(pool));
+    const distractors = shuffle(uniquePool).slice(0, Math.min(3, uniquePool.length));
+    const options = shuffle([correct, ...distractors]);
+    quizChoicesEl.innerHTML = options.map(opt => `<button type="button" class="quiz-choice-btn" data-choice="${escapeHtml(opt)}">${escapeHtml(opt)}</button>`).join('');
+  }
+
+  function setQuizMode(stage) {
+    const isChoice = stage === 'new';
+    quizChoicesEl.style.display = isChoice ? 'flex' : 'none';
+    quizInputRowEl.style.display = isChoice ? 'none' : 'flex';
+    quizModeLabelEl.textContent = stage === 'mastered' ? 'Mastered — light review' : (isChoice ? 'Multiple choice' : 'Typing');
+  }
+
+  function pickQuizQuestion() {
+    if (entries.length === 0) {
+      quizPromptEl.textContent = 'Add some words to your chart first!';
+      quizChoicesEl.innerHTML = '';
+      return;
+    }
+    syncQuizStats();
+    quizIndex = pickWeightedIndex(quizIndex);
+    const stat = quizStats[quizIndex];
+    quizPromptEl.textContent = entries[quizIndex].en;
+    quizAnswerEl.value = '';
+    quizAnswerEl.classList.remove('correct', 'incorrect');
+    quizFeedbackEl.textContent = '';
+    quizFeedbackEl.className = 'quiz-feedback';
+    quizAnswered = false;
+    setQuizMode(stat.stage);
+    if (stat.stage === 'new') {
+      renderQuizChoices(quizIndex);
+    } else {
+      quizAnswerEl.focus();
+    }
+  }
+
+  function finishQuizTurn(correct) {
+    quizAnswered = true;
+    quizScore.total++;
+    if (correct) quizScore.correct++;
+    quizScoreEl.textContent = `Score: ${quizScore.correct} / ${quizScore.total}`;
+    updateMasteryStat();
+  }
+
+  function checkQuizChoice(selected, btnEl) {
+    if (quizIndex === null || quizAnswered) return;
+    syncQuizStats();
+    const entry = entries[quizIndex];
+    const stat = quizStats[quizIndex];
+    const correct = normalizeAnswer(selected) === normalizeAnswer(entry.fr);
+    Array.from(quizChoicesEl.children).forEach(b => {
+      b.disabled = true;
+      if (normalizeAnswer(b.dataset.choice) === normalizeAnswer(entry.fr)) b.classList.add('correct');
+    });
+    if (correct) {
+      stat.stage = 'typing';
+      stat.streak = 0;
+      stat.priority = Math.min(stat.priority + 1, MAX_PRIORITY);
+      quizFeedbackEl.className = 'quiz-feedback correct';
+      quizFeedbackEl.textContent = "Correct! Next time you'll type it from scratch.";
+    } else {
+      btnEl.classList.add('incorrect');
+      stat.priority = MIN_PRIORITY;
+      quizFeedbackEl.className = 'quiz-feedback incorrect';
+      quizFeedbackEl.innerHTML = `Not quite — it's <strong>${escapeHtml(entry.fr)}</strong> <span class="pron">(${escapeHtml(entry.pron || '')})</span>`;
+    }
+    finishQuizTurn(correct);
+  }
+
+  function checkQuizAnswer() {
+    if (quizIndex === null || quizAnswered) return;
+    syncQuizStats();
+    const entry = entries[quizIndex];
+    const stat = quizStats[quizIndex];
+    const correct = normalizeAnswer(quizAnswerEl.value) === normalizeAnswer(entry.fr);
+    if (correct) {
+      stat.streak = (stat.streak || 0) + 1;
+      stat.priority = Math.min(stat.priority + 2, MAX_PRIORITY);
+      const justMastered = stat.streak >= MASTERY_STREAK && stat.stage !== 'mastered';
+      if (stat.streak >= MASTERY_STREAK) stat.stage = 'mastered';
+      quizAnswerEl.classList.add('correct');
+      quizFeedbackEl.className = 'quiz-feedback correct';
+      quizFeedbackEl.textContent = justMastered ? 'Correct! Mastered — nice work.' : 'Correct!';
+    } else {
+      stat.streak = 0;
+      stat.priority = MIN_PRIORITY;
+      if (stat.stage === 'mastered') stat.stage = 'typing';
+      quizAnswerEl.classList.add('incorrect');
+      quizFeedbackEl.className = 'quiz-feedback incorrect';
+      quizFeedbackEl.innerHTML = `Not quite — it's <strong>${escapeHtml(entry.fr)}</strong> <span class="pron">(${escapeHtml(entry.pron || '')})</span>`;
+    }
+    finishQuizTurn(correct);
+  }
+
+  function showQuizAnswer() {
+    if (quizIndex === null || quizAnswered) return;
+    syncQuizStats();
+    const stat = quizStats[quizIndex];
+    const entry = entries[quizIndex];
+    stat.priority = MIN_PRIORITY;
+    stat.streak = 0;
+    if (stat.stage === 'mastered') stat.stage = 'typing';
+    if (stat.stage === 'new') {
+      Array.from(quizChoicesEl.children).forEach(b => {
+        b.disabled = true;
+        if (normalizeAnswer(b.dataset.choice) === normalizeAnswer(entry.fr)) b.classList.add('correct');
+      });
+    }
+    quizFeedbackEl.className = 'quiz-feedback';
+    quizFeedbackEl.innerHTML = `Answer: <strong>${escapeHtml(entry.fr)}</strong> <span class="pron">(${escapeHtml(entry.pron || '')})</span>`;
+    quizAnswered = true; // showing the answer isn't a scored attempt, so quizScore is untouched
+    updateMasteryStat();
+  }
+
+  document.getElementById('quizCheckBtn').addEventListener('click', checkQuizAnswer);
+  document.getElementById('quizNextBtn').addEventListener('click', pickQuizQuestion);
+  document.getElementById('quizShowBtn').addEventListener('click', showQuizAnswer);
+  quizChoicesEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.quiz-choice-btn');
+    if (!btn) return;
+    checkQuizChoice(btn.dataset.choice, btn);
+  });
+  quizAnswerEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      if (!quizAnswered) checkQuizAnswer();
+      else pickQuizQuestion();
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const tabQuizEl = document.getElementById('tabQuiz');
+    if (!tabQuizEl.classList.contains('active')) return;
+    if (document.activeElement === quizAnswerEl) return; // handled above
+    if (quizAnswered) pickQuizQuestion();
+  });
+
+  renderWords();
+  renderNotes();
+  renderLog();
+  pickQuizQuestion();
+  updateMasteryStat();
+</script>
+
+</body>
+</html>
